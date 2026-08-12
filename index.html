@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scaffold — PoC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink-900:#111C24;
+  --ink-800:#18262F;
+  --ink-700:#20323D;
+  --ink-600:#2B4150;
+  --chalk:#EDE9E0;
+  --muted:#93A7B2;
+  --brass:#E2A93F;
+  --moss:#83AD90;
+  --rust:#C4735E;
+
+  --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
+  --body:'Inter Tight',ui-sans-serif,system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+
+  --r:14px;
+  --pad:20px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--ink-900);
+  color:var(--chalk);
+  font-family:var(--body);
+  font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;gap:28px;
+  padding:0;
+}
+
+/* ---------- shell ---------- */
+#device{
+  width:100%;max-width:430px;
+  background:var(--ink-800);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  border-left:1px solid var(--ink-700);
+  border-right:1px solid var(--ink-700);
+}
+#rail{
+  display:none;
+  width:340px;flex-shrink:0;
+  padding:28px 24px 60px 0;
+  color:var(--muted);font-size:13px;line-height:1.55;
+  max-height:100vh;overflow-y:auto;
+}
+@media (min-width:1080px){
+  body{gap:40px}
+  #rail{display:block}
+  #device{border-radius:0;box-shadow:0 0 0 1px var(--ink-700)}
+}
+
+/* ---------- type ---------- */
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;letter-spacing:-0.02em}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);
+}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+
+/* ---------- topbar ---------- */
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px var(--pad) 10px;
+  border-bottom:1px solid var(--ink-700);
+  flex-shrink:0;
+}
+#topbar .brand{font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:-0.01em}
+#topbar .brand span{color:var(--brass)}
+.pill{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--ink-600);border-radius:999px;padding:3px 8px;
+}
+
+/* ---------- screens ---------- */
+main{flex:1;position:relative;overflow-y:auto;overscroll-behavior:contain}
+.screen{display:none;padding:22px var(--pad) 110px;animation:rise .28s ease both}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- orient ---------- */
+.clockline{display:flex;align-items:baseline;gap:10px;margin-bottom:2px}
+.clock{font-family:var(--mono);font-size:34px;letter-spacing:-0.03em}
+.datewrap{margin-bottom:22px}
+.daybar{
+  height:6px;border-radius:3px;background:var(--ink-700);
+  overflow:hidden;margin:14px 0 8px;
+}
+.daybar i{display:block;height:100%;background:var(--brass);opacity:.75}
+.daybar-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+.block{margin-bottom:20px}
+.block h3{font-size:13px;font-family:var(--body);font-weight:600;color:var(--muted);
+  letter-spacing:.02em;margin-bottom:8px}
+
+.row{
+  display:flex;align-items:center;gap:12px;
+  background:var(--ink-700);border:1px solid transparent;
+  border-radius:var(--r);padding:12px 14px;margin-bottom:8px;
+}
+.row .t{flex:1;min-width:0}
+.row .t b{font-weight:500;display:block}
+.row .t small{color:var(--muted);font-family:var(--mono);font-size:11px}
+.tick{width:8px;height:8px;border-radius:50%;background:var(--brass);flex-shrink:0}
+.tick.soon{background:var(--rust)}
+.tick.cal{background:var(--muted)}
+
+.energy{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.energy button{
+  font:inherit;font-family:var(--display);font-weight:600;font-size:17px;
+  color:var(--chalk);background:var(--ink-700);
+  border:1px solid var(--ink-600);border-radius:var(--r);
+  padding:16px 14px;text-align:left;cursor:pointer;transition:.16s;
+}
+.energy button small{display:block;font-family:var(--body);font-weight:400;font-size:11.5px;
+  color:var(--muted);margin-top:3px;letter-spacing:0}
+.energy button:hover{border-color:var(--brass);transform:translateY(-1px)}
+.energy button:active{transform:translateY(0)}
+
+/* ---------- focus ---------- */
+#focus{padding-top:14px}
+.focuswrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:6px}
+.reason{
+  color:var(--muted);font-size:13.5px;max-width:300px;margin:0 auto 20px;
+  border-left:2px solid var(--brass);padding-left:12px;text-align:left;
+}
+.tasktitle{font-family:var(--display);font-size:29px;line-height:1.15;font-weight:600;margin-bottom:8px;max-width:330px}
+.anchor{font-size:13px;color:var(--muted);max-width:300px;margin-bottom:26px}
+.anchor b{color:var(--chalk);font-weight:500}
+
+/* signature: the depleting disc */
+.dial{position:relative;width:236px;height:236px;margin-bottom:8px}
+.dial svg{transform:rotate(-90deg);display:block}
+.dial .ring-bg{stroke:var(--ink-700)}
+.dial .ring-fg{stroke:var(--brass);transition:stroke-dashoffset .95s linear,stroke .4s}
+.dial.over .ring-fg{stroke:var(--moss)}
+.dial .center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;
+}
+.dial .rem{font-family:var(--mono);font-size:36px;letter-spacing:-0.04em}
+.dial .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.dial.paused .rem{color:var(--muted)}
+
+.focusbtns{display:flex;gap:10px;margin-top:18px;width:100%;max-width:330px}
+.btn{
+  flex:1;font:inherit;font-weight:500;cursor:pointer;
+  background:var(--ink-700);color:var(--chalk);
+  border:1px solid var(--ink-600);border-radius:var(--r);padding:13px 12px;transition:.16s;
+}
+.btn:hover{border-color:var(--brass)}
+.btn.primary{background:var(--brass);color:#15202A;border-color:var(--brass);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.wide{width:100%;flex:none}
+
+.midcapture{
+  position:absolute;right:14px;bottom:76px;
+  width:38px;height:38px;border-radius:50%;
+  border:1px solid var(--ink-600);background:var(--ink-700);
+  color:var(--muted);cursor:pointer;font-size:16px;line-height:1;
+}
+.midcapture:hover{color:var(--brass);border-color:var(--brass)}
+
+/* ---------- close ---------- */
+#close .ritual{text-align:center;padding-top:40px}
+.donemark{width:120px;height:120px;margin:0 auto 22px}
+.donemark circle{fill:none;stroke-width:3}
+.donemark .r1{stroke:var(--ink-600)}
+.donemark .r2{stroke:var(--moss);stroke-dasharray:339;stroke-dashoffset:339;
+  animation:draw 1.1s cubic-bezier(.22,.9,.3,1) .1s forwards;transform:rotate(-90deg);transform-origin:center}
+@keyframes draw{to{stroke-dashoffset:0}}
+.donemark path{fill:none;stroke:var(--moss);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:60;stroke-dashoffset:60;animation:draw .5s ease .8s forwards}
+.outcomes{display:flex;flex-direction:column;gap:8px;margin-top:26px}
+.outcomes button{
+  font:inherit;text-align:left;cursor:pointer;padding:14px 16px;
+  background:var(--ink-700);border:1px solid var(--ink-600);border-radius:var(--r);color:var(--chalk);
+  display:flex;align-items:center;gap:12px;transition:.16s;
+}
+.outcomes button:hover{border-color:currentColor}
+.outcomes .g{color:var(--moss)}.outcomes .a{color:var(--brass)}.outcomes .r{color:var(--rust)}
+.outcomes button span{color:var(--chalk);font-weight:500}
+.outcomes button em{color:var(--muted);font-style:normal;font-size:12.5px;display:block;font-weight:400}
+
+/* ---------- capture sheet ---------- */
+#sheet{
+  position:fixed;inset:0;background:rgba(9,15,20,.72);
+  display:none;align-items:flex-end;justify-content:center;z-index:40;
+  backdrop-filter:blur(3px);
+}
+#sheet.on{display:flex}
+.sheetbody{
+  width:100%;max-width:430px;background:var(--ink-800);
+  border-top:1px solid var(--ink-600);border-radius:20px 20px 0 0;
+  padding:16px var(--pad) 22px;animation:up .22s ease both;
+}
+@keyframes up{from{transform:translateY(30px)}to{transform:none}}
+.grip{width:38px;height:4px;border-radius:2px;background:var(--ink-600);margin:0 auto 14px}
+#capText{
+  width:100%;min-height:96px;resize:none;font:inherit;font-size:17px;
+  background:var(--ink-700);color:var(--chalk);border:1px solid var(--ink-600);
+  border-radius:var(--r);padding:14px;outline:none;
+}
+#capText:focus{border-color:var(--brass)}
+#capText::placeholder{color:var(--muted)}
+.caprow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.recbtn{
+  width:54px;height:54px;border-radius:50%;flex-shrink:0;cursor:pointer;
+  border:1px solid var(--ink-600);background:var(--ink-700);color:var(--brass);
+  font-size:19px;transition:.16s;
+}
+.recbtn.live{background:var(--rust);color:#fff;border-color:var(--rust);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,115,94,.5)}50%{box-shadow:0 0 0 10px rgba(196,115,94,0)}}
+.sttnote{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+.sttnote b{color:var(--brass);font-weight:400}
+
+/* ---------- inbox / grooming ---------- */
+.capcard{
+  background:var(--ink-700);border:1px solid var(--ink-600);border-radius:var(--r);
+  padding:14px;margin-bottom:10px;
+}
+.capcard .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.capcard .meta .eyebrow{font-size:10px}
+.seg{
+  display:inline;cursor:pointer;padding:2px 1px;border-radius:4px;
+  border-bottom:1px dotted var(--ink-600);transition:.12s;
+}
+.seg:hover{background:var(--ink-600)}
+.seg.sel{background:rgba(226,169,63,.22);border-bottom-color:var(--brass);color:#fff}
+.capactions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.mini{
+  font:inherit;font-size:12.5px;cursor:pointer;padding:7px 11px;border-radius:9px;
+  background:transparent;border:1px solid var(--ink-600);color:var(--muted);transition:.16s;
+}
+.mini:hover{color:var(--chalk);border-color:var(--brass)}
+.mini.act{color:var(--brass);border-color:var(--brass)}
+.mini[disabled]{opacity:.35;cursor:not-allowed}
+.parentlink{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px;display:block}
+.needsreview{color:var(--rust);font-family:var(--mono);font-size:10.5px}
+
+audio{width:100%;height:32px;margin-top:10px;filter:invert(.9) hue-rotate(180deg) saturate(.4)}
+
+/* ---------- nav ---------- */
+#nav{
+  position:sticky;bottom:0;display:flex;flex-shrink:0;
+  border-top:1px solid var(--ink-700);background:var(--ink-800);
+}
+.modelpick{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--ink-700);
+}
+.modelpick select{
+  font:inherit;font-size:12.5px;background:var(--ink-700);color:var(--chalk);
+  border:1px solid var(--ink-600);border-radius:9px;padding:7px 9px;outline:none;
+}
+.modelstat{
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  flex-basis:100%;line-height:1.5;
+}
+.modelstat.ready{color:var(--moss)}
+.modelstat.busy{color:var(--brass)}
+.modelstat.err{color:var(--rust)}
+
+#toast{
+  position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(14px);
+  background:var(--ink-700);border:1px solid var(--ink-600);color:var(--chalk);
+  padding:10px 16px;border-radius:999px;font-size:13.5px;z-index:50;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#nav button{
+  position:relative;
+  flex:1;font:inherit;font-size:11px;cursor:pointer;background:none;border:none;
+  color:var(--muted);padding:11px 4px calc(11px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:.16s;
+}
+#nav button .ic{font-size:16px;line-height:1}
+#nav button.on{color:var(--brass)}
+#nav .badge{
+  position:absolute;transform:translate(16px,-4px);
+  background:var(--brass);color:#15202A;border-radius:999px;
+  font-family:var(--mono);font-size:9px;padding:1px 5px;font-weight:600;
+}
+
+.fab{
+  position:fixed;bottom:76px;left:50%;transform:translateX(calc(-50% + 155px));
+  width:56px;height:56px;border-radius:50%;z-index:20;
+  background:var(--brass);color:#15202A;border:none;font-size:24px;cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);
+}
+@media (max-width:470px){.fab{left:auto;right:16px;transform:none}}
+
+/* ---------- empty ---------- */
+.empty{
+  border:1px dashed var(--ink-600);border-radius:var(--r);
+  padding:26px 18px;text-align:center;color:var(--muted);font-size:14px;
+}
+
+/* ---------- rail ---------- */
+#rail h2{font-size:17px;color:var(--chalk);margin:26px 0 8px}
+#rail h2:first-child{margin-top:0}
+#rail ul{margin:0;padding-left:16px}
+#rail li{margin-bottom:5px}
+#rail code{font-family:var(--mono);font-size:11.5px;color:var(--brass)}
+#rail pre{
+  background:var(--ink-800);border:1px solid var(--ink-700);border-radius:10px;
+  padding:11px;overflow-x:auto;font-family:var(--mono);font-size:11px;color:var(--chalk);
+}
+#log{
+  font-family:var(--mono);font-size:11px;background:var(--ink-800);
+  border:1px solid var(--ink-700);border-radius:10px;padding:11px;
+  max-height:220px;overflow-y:auto;
+}
+#log div{margin-bottom:3px;white-space:pre-wrap}
+#log .t{color:var(--brass)}
+
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--ink-600);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+
+<div id="device">
+  <div id="topbar">
+    <div class="brand">Scaf<span>·</span>fold</div>
+    <div class="pill" id="modePill">poc</div>
+  </div>
+
+  <main>
+    <!-- ORIENT -->
+    <section class="screen on" id="orient">
+      <div class="datewrap">
+        <div class="eyebrow" id="oDate">—</div>
+        <div class="clockline"><div class="clock" id="oClock">--:--</div></div>
+        <div class="daybar"><i id="oBar" style="width:0%"></i></div>
+        <div class="daybar-labels"><span id="oLeft">—</span><span>day ends 22:00</span></div>
+      </div>
+
+      <div class="block" id="oDeadlinesBlock">
+        <h3>Immovable today</h3>
+        <div id="oDeadlines"></div>
+      </div>
+
+      <div class="block">
+        <h3>Waiting in Inbox</h3>
+        <div id="oInbox"></div>
+      </div>
+
+      <div class="block">
+        <h2 style="font-size:24px;margin-bottom:4px">What's your energy right now?</h2>
+        <p class="muted" style="font-size:13px;margin:0 0 14px">Not tracked. Not judged. Just used to pick the next thing.</p>
+        <div class="energy">
+          <button data-e="high">High<small>sharp, want a real problem</small></button>
+          <button data-e="med">Medium<small>functional, steady</small></button>
+          <button data-e="low">Low<small>tired, small things only</small></button>
+          <button data-e="scattered">Scattered<small>can't land on anything</small></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOCUS -->
+    <section class="screen" id="focus">
+      <div class="focuswrap">
+        <div class="reason" id="fReason">—</div>
+        <div class="tasktitle" id="fTitle">—</div>
+        <div class="anchor" id="fAnchor"></div>
+
+        <div class="dial" id="dial">
+          <svg width="236" height="236" viewBox="0 0 236 236">
+            <circle class="ring-bg" cx="118" cy="118" r="104" fill="none" stroke-width="14"/>
+            <circle class="ring-fg" id="ring" cx="118" cy="118" r="104" fill="none" stroke-width="14"
+                    stroke-linecap="round" stroke-dasharray="653.45" stroke-dashoffset="0"/>
+          </svg>
+          <div class="center">
+            <div class="rem" id="fRem">25:00</div>
+            <div class="lab" id="fLab">tap to start</div>
+          </div>
+        </div>
+
+        <div class="focusbtns">
+          <button class="btn ghost" id="fSwap">Swap once</button>
+          <button class="btn primary" id="fStart">Start</button>
+        </div>
+        <button class="btn wide ghost" id="fEnd" style="margin-top:10px;max-width:330px">Close this task</button>
+      </div>
+      <button class="midcapture" id="fCapture" title="Capture a stray thought" aria-label="Capture a stray thought">✎</button>
+    </section>
+
+    <!-- CLOSE -->
+    <section class="screen" id="close">
+      <div class="ritual">
+        <svg class="donemark" viewBox="0 0 120 120">
+          <circle class="r1" cx="60" cy="60" r="54"/>
+          <circle class="r2" cx="60" cy="60" r="54"/>
+          <path d="M40 62 L54 76 L82 46"/>
+        </svg>
+        <div class="eyebrow">that block is over</div>
+        <div class="tasktitle" id="cTitle" style="margin:10px auto 6px">—</div>
+        <div class="anchor" id="cAnchor" style="margin:0 auto"></div>
+
+        <div class="outcomes" id="cOutcomes">
+          <button data-o="done"><b class="g">✓</b><span>Done<em>it's finished, close it out</em></span></button>
+          <button data-o="partial"><b class="a">◑</b><span>Partial<em>made progress, note where you stopped</em></span></button>
+          <button data-o="blocked"><b class="r">✕</b><span>Blocked<em>something's in the way — capture it</em></span></button>
+        </div>
+
+        <div id="cFollow" style="display:none;margin-top:18px;text-align:left">
+          <textarea id="cNote" placeholder="Where did you stop?" style="width:100%;min-height:70px;resize:none;font:inherit;background:var(--ink-700);color:var(--chalk);border:1px solid var(--ink-600);border-radius:var(--r);padding:12px;outline:none"></textarea>
+          <button class="btn primary wide" id="cSaveNote" style="margin-top:10px">Save and close</button>
+        </div>
+
+        <div id="cNext" style="display:none;margin-top:26px">
+          <div class="eyebrow" style="margin-bottom:10px">and now?</div>
+          <div class="focusbtns" style="max-width:none">
+            <button class="btn" data-n="more">One more</button>
+            <button class="btn" data-n="rest">Rest</button>
+            <button class="btn" data-n="stop">Done for now</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INBOX / GROOMING -->
+    <section class="screen" id="inbox">
+      <h2 style="font-size:24px">Inbox</h2>
+      <p class="muted" style="font-size:13px;margin:4px 0 18px">
+        Nothing here is overdue. Groom when you have the bandwidth — tap a stretch of text, then split it off.
+      </p>
+      <div id="inboxList"></div>
+    </section>
+
+    <!-- SESSION LOG -->
+    <section class="screen" id="logscreen">
+      <h2 style="font-size:24px">Today</h2>
+      <p class="muted" style="font-size:13px;margin:4px 0 18px">Sessions closed. No streaks, no scores.</p>
+      <div id="sessionList"></div>
+      <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="mini" id="exportBtn">Export all data (JSON)</button>
+        <button class="mini" id="resetBtn">Reset PoC</button>
+      </div>
+    </section>
+  </main>
+
+  <button class="fab" id="fab" aria-label="Quick capture">+</button>
+
+  <nav id="nav">
+    <button data-s="orient" class="on"><span class="ic">◑</span>Orient</button>
+    <button data-s="focus"><span class="ic">◎</span>Focus</button>
+    <button data-s="inbox"><span class="ic">≡</span><span id="inboxBadge" class="badge" style="display:none">0</span>Inbox</button>
+    <button data-s="logscreen"><span class="ic">▤</span>Today</button>
+  </nav>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- CAPTURE SHEET -->
+<div id="sheet" role="dialog" aria-modal="true" aria-label="Quick capture">
+  <div class="sheetbody">
+    <div class="grip"></div>
+    <textarea id="capText" placeholder="Say it or type it. No category, no due date."></textarea>
+    <div class="caprow">
+      <button class="recbtn" id="recBtn" aria-label="Record voice capture">●</button>
+      <button class="btn primary" id="capSave" style="flex:1">Drop in Inbox</button>
+      <button class="btn ghost" id="capCancel" style="flex:0 0 auto">Close</button>
+    </div>
+    <div class="sttnote" id="sttNote"></div>
+    <div class="modelpick">
+      <select id="modelSel" aria-label="Local speech model">
+        <option value="">no local model</option>
+        <option value="tiny.en">whisper tiny.en · ~40 MB</option>
+        <option value="base.en">whisper base.en · ~80 MB</option>
+        <option value="small.en">whisper small.en · ~250 MB</option>
+      </select>
+      <button class="mini" id="modelLoad" disabled>Load</button>
+      <span class="modelstat" id="modelStat">select a model to run transcription on this device</span>
+    </div>
+  </div>
+</div>
+
+<!-- DESKTOP RAIL -->
+<aside id="rail">
+  <h2>What this PoC is for</h2>
+  <p>Two questions only: does the Orient → Focus → Close loop hold up against real thumbs, and does local speech-to-text clear the latency bar for capture.</p>
+
+  <h2>Validated here</h2>
+  <ul>
+    <li>The one-thing-at-a-time constraint under real screen size</li>
+    <li>Focus Engine v1 — the same pure <code>score(task, energy, now)</code> from §5, with the reason string it emits</li>
+    <li>Tap-to-mark splitting (1.1b) — whether it's actually low-friction</li>
+    <li>Desktop STT latency, if you wire the whisper adapter below</li>
+  </ul>
+
+  <h2>Not validated here</h2>
+  <ul>
+    <li>Mobile battery cost of on-device inference</li>
+    <li>Real background/offline behaviour</li>
+    <li>Flutter vs React Native packaging</li>
+  </ul>
+
+  <h2>Speech-to-text here</h2>
+  <p>Pick a model in the capture sheet and press Load. Weights come from the Hugging Face CDN and are cached by the browser, so it's a one-time download per model. WebGPU is used when the browser offers it, plain WASM otherwise — the status line tells you which.</p>
+  <p>This is <code>onnxruntime-web</code>, not <code>whisper.cpp</code>. Same Whisper weights, different inference engine, and no cross-origin isolation required — which is the only reason this runs on GitHub Pages at all. Treat the timings as a comparison <em>between</em> model sizes and devices, not as a prediction of native mobile latency.</p>
+  <p>Swapping in real whisper.cpp later means replacing one function. Everything upstream reads <code>window.ScaffoldSTT.transcribe(blob)</code> and nothing else:</p>
+  <pre>window.ScaffoldSTT = {
+  name: 'whisper.cpp-wasm',
+  local: true,
+  transcribe: async (blob) =&gt; "text"
+};</pre>
+  <p>With no model loaded, the app runs the fallback path from §3.3 — audio is saved, the transcript is left blank and flagged <span class="needsreview">needs review</span>. Worth exercising deliberately; it's what a failed transcription looks like in production.</p>
+
+  <h2>Instrumentation</h2>
+  <div id="log"></div>
+</aside>
+
+<script>
+/* =========================================================
+   Scaffold PoC — single file, no backend, no build step.
+   Data model mirrors §4 of the architecture doc.
+   ========================================================= */
+
+/* ---------- storage shim (memory-first, persists if allowed) ---------- */
+const Store = (()=>{
+  let mem = {};
+  let ok = false;
+  try{ const k='__s'; localStorage.setItem(k,'1'); localStorage.removeItem(k); ok=true; }catch(e){ ok=false; }
+  return {
+    persistent: ok,
+    get(k){ try{ return ok ? JSON.parse(localStorage.getItem(k)) : mem[k]; }catch(e){ return mem[k]; } },
+    set(k,v){ try{ ok ? localStorage.setItem(k,JSON.stringify(v)) : (mem[k]=v); }catch(e){ mem[k]=v; } },
+    clear(){ try{ ok && localStorage.removeItem('scaffold'); }catch(e){} mem={}; }
+  };
+})();
+
+const uid = p => p+'_'+Math.random().toString(36).slice(2,9);
+const now = () => Date.now();
+const DAY = 86400000;
+
+/* ---------- seed ---------- */
+/* ---------- seed: a test fixture, not a plausible day ----------
+   Every task exists to make one behaviour observable. The four energy states
+   each resolve to a different task, by a different dominant term, with enough
+   margin that a wrong answer is obvious rather than arguable. Replace all of
+   this with real work once the mechanics are trusted — the fixture tells you
+   the engine functions, not that it's useful. */
+function seed(){
+  const t0 = now();
+  const goals = [
+    {id:'g1', title:'I want the first working build in someone else\'s hands by the end of the month',
+     time_horizon:'month', created_at:t0, active:true},
+    {id:'g2', title:'I want the review backlog cleared this week',
+     time_horizon:'week', created_at:t0, active:true}
+  ];
+  const T = (title,dur,goal,deadlineDays,ageDays)=>({
+    id:uid('t'), title, source_capture_id:null, estimated_duration_min:dur, goal_id:goal,
+    created_at:t0-(ageDays||0)*DAY, deadline: deadlineDays==null?null:t0+deadlineDays*DAY,
+    status:'open', energy_tag:null
+  });
+  const tasks = [
+    // HIGH → wins on `effort`. Longest task, goal-linked, no deadline pressure.
+    T('Deep work block — should win on High energy', 90, 'g1', null, 0),
+    // MED → wins on `moderate`. 40 min sits at the peak of the medium curve.
+    T('Moderate block — should win on Medium energy', 40, 'g1', null, 14),
+    // LOW → identical twins. Same score to three decimals, so the tie-break
+    // fires and the older one must win every single time. Also 1 minute long,
+    // which is the only way to actually watch the timer elapse and overrun.
+    T('One-minute task A — should win on Low (older twin)', 1, null, null, 21),
+    T('One-minute task B — identical score, should lose the tie', 1, null, null, 16),
+    // SCATTERED → wins on `urgency`. Also has no goal, so the Focus anchor
+    // line should be absent here and present on the High/Medium winners.
+    T('Due tomorrow — should win on Scattered', 25, null, 1, 0),
+    // Ranks 2nd on High, so Swap surfaces it — and its dominant term is `goal`,
+    // which is the only way to see that reason string.
+    T('Goal-linked 50 min — should be the Swap target on High', 50, 'g2', null, 14),
+    // Appears in Orient's "immovable today" list (4-day window edge) but is
+    // never the top pick in any state.
+    T('Due in 4 days — should show in Orient, never win', 60, null, 4, 0),
+    // Control: no goal, no deadline, freshly created, too long to be "small".
+    // Scores zero under Low. Complete everything else, pick Low, and the
+    // engine should admit it has no reason rather than invent one.
+    T('No goal, no deadline, 90 min — should never surface', 90, null, null, 0)
+  ];
+  const captures = [
+    // Splitting test: four distinct items in one stream, with one boundary
+    // that needs two taps rather than one — that's the §10.3 question.
+    {id:'c_split', created_at:t0-2*DAY, source:'voice', raw_text:
+      "right so the main thing is getting the build in front of someone before the end of the month, that's the big one. also the review backlog is still sitting there, an hour would probably clear it. and I keep meaning to check whether the one-minute timer actually fires the soft prompt or just sits there. oh and test what happens when a capture has no transcript at all.",
+     audio_ref:null, transcription_confidence:0.71, status:'inbox', parent_capture_id:null, merged_from_ids:null},
+    // Merge test: one thought, cut in half by a pause. These two must stay
+    // adjacent — "Merge with next" joins a card to the one below it.
+    {id:'c_merge_a', created_at:t0-3*3600000, source:'voice', raw_text:
+      "the thing I wanted to say about the split interaction was that",
+     audio_ref:null, transcription_confidence:0.55, status:'inbox', parent_capture_id:null, merged_from_ids:null},
+    {id:'c_merge_b', created_at:t0-3*3600000+4000, source:'voice', raw_text:
+      "if it takes more than two taps to pull out one item it's probably too fiddly to use",
+     audio_ref:null, transcription_confidence:0.55, status:'inbox', parent_capture_id:null, merged_from_ids:null},
+    // Failed-transcription test: the §3.3 fallback, without having to break
+    // the microphone to see it.
+    {id:'c_noscript', created_at:t0-5*3600000, source:'voice', raw_text:'',
+     audio_ref:null, audio_lost:true, transcription_confidence:0.08, status:'inbox',
+     parent_capture_id:null, merged_from_ids:null, needs_review:true},
+    // Single segment: splitting should be a no-op, "Make it a task" should work.
+    {id:'c_single', created_at:t0-30*60000, source:'text', raw_text:
+      "Turn this one straight into a task without splitting it.",
+     audio_ref:null, transcription_confidence:null, status:'inbox', parent_capture_id:null, merged_from_ids:null}
+  ];
+  return {goals, tasks, captures, sessions:[], version:1};
+}
+
+let S = Store.get('scaffold') || seed();
+const save = ()=>Store.set('scaffold', S);
+
+// A blob: URL is only valid for the page that created it. Anything persisted
+// from a previous session points at nothing, so the audio fallback would look
+// present and silently fail — worse than admitting the audio is gone.
+S.captures.forEach(c=>{
+  if(c.audio_ref && c.audio_ref.startsWith('blob:')){ c.audio_ref = null; c.audio_lost = true; }
+});
+const goalOf = id => S.goals.find(g=>g.id===id);
+
+/* ---------- instrumentation ---------- */
+const logEl = document.getElementById('log');
+function log(msg){
+  const d = document.createElement('div');
+  const t = new Date().toLocaleTimeString('sv-SE');
+  d.innerHTML = '<span class="t">'+t+'</span>  '+msg;
+  logEl.prepend(d);
+}
+log('storage: '+(Store.persistent?'localStorage':'memory only'));
+
+/* =========================================================
+   FOCUS ENGINE — §5. Pure function. Same shape the ML layer
+   would later plug into: same inputs, same output.
+   ========================================================= */
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+function score(task, energy, t){
+  const dur      = task.estimated_duration_min;
+  const effort   = clamp(dur/90, 0, 1);
+  const small    = 1 - effort;
+  const urgency  = task.deadline==null ? 0 : clamp(1 - ((task.deadline - t)/DAY)/10, 0, 1);
+  const age      = clamp(((t - task.created_at)/DAY)/14, 0, 1);
+  const goal     = task.goal_id ? 1 : 0;
+
+  let parts;
+  switch(energy){
+    case 'high':      parts = {effort:0.42*effort, goal:0.28*goal, urgency:0.20*urgency, age:0.10*age}; break;
+    case 'med': {
+      // peaks at ~40 min, falls off in both directions
+      const moderate = clamp(1 - Math.abs(effort - 0.45) * 2, 0, 1);
+      parts = {urgency:0.40*urgency, moderate:0.30*moderate, goal:0.20*goal, age:0.10*age};
+      break;
+    }
+    case 'low':       parts = {small:0.50*small, urgency:0.25*urgency, age:0.15*age, goal:0.10*goal}; break;
+    case 'scattered': parts = {urgency:0.55*urgency, small:0.30*small, age:0.15*age}; break;
+  }
+  const total = Object.values(parts).reduce((a,b)=>a+b,0);
+  const dominant = Object.entries(parts).sort((a,b)=>b[1]-a[1])[0][0];
+  return {total, dominant, parts};
+}
+
+function reasonFor(task, energy, dominant, weight){
+  const g = goalOf(task.goal_id);
+  const d = task.deadline==null ? null : Math.ceil((task.deadline-now())/DAY);
+
+  // If the winning term is itself zero, nothing actually argued for this task —
+  // say so plainly rather than inventing a rationale. An engine that explains
+  // itself has to be able to admit when it has no strong reason.
+  if(!weight || weight <= 0.001){
+    return `Nothing on the board scores strongly right now — this is the least bad fit for ${energy==='med'?'medium':energy} energy.`;
+  }
+  if(dominant==='urgency' && d==null) dominant = 'age';
+  const lines = {
+    effort:   `You said high energy — this is the biggest thing on the board and it needs a clear head.`,
+    small:    `You said ${energy==='scattered'?'scattered':'low energy'} — this one is ${task.estimated_duration_min} minute${task.estimated_duration_min===1?'':'s'} and self-contained.`,
+    urgency:  d!=null && d<=1 ? `This is due tomorrow. Nothing else is closer.` : `Deadline in ${d} days — closest thing on the board.`,
+    moderate: `Medium energy — this is a moderate block, not a marathon.`,
+    goal:     `This is the piece that moves ${g?g.title.replace(/^I want /,''):'your goal'}.`,
+    age:      `This has sat untouched for ${Math.round((now()-task.created_at)/DAY)} days. Worth clearing.`
+  };
+  return lines[dominant] || `Best fit for your current energy.`;
+}
+
+/* §1.3: "Scattered → surface the single most urgent item, OR suggest a 10-min
+   declutter session." The second half only makes sense when nothing is actually
+   urgent — otherwise a real deadline gets buried under busywork. */
+function declutterTask(){
+  let t = S.tasks.find(x=>x.ephemeral && x.status==='open');
+  if(!t){
+    t = {id:uid('t'), title:'Ten minutes of decluttering', source_capture_id:null,
+         estimated_duration_min:10, goal_id:null, created_at:now(), deadline:null,
+         status:'open', energy_tag:'scattered', ephemeral:true};
+    S.tasks.push(t); save();
+  }
+  return t;
+}
+
+function pickTask(energy, exclude){
+  const open = S.tasks.filter(t=>t.status==='open' && t.id!==exclude && !t.ephemeral);
+  if(!open.length) return null;
+  const t = now();
+  const ranked = open.map(task=>{
+    const s = score(task, energy, t);
+    return {task, ...s};
+  }).sort((a,b)=>
+    // Deterministic by construction: ties break to the oldest task, then to id.
+    // Without this, three equally-scored 10-minute tasks would surface in
+    // whatever order the array happened to be in — which reads as random to
+    // the user and quietly breaks the "explainable" claim.
+    (b.total - a.total) || (a.task.created_at - b.task.created_at) ||
+    (a.task.id < b.task.id ? -1 : 1)
+  );
+  const top = ranked[0];
+
+  if(energy==='scattered' && (top.parts.urgency||0) < 0.25 && exclude==null){
+    log(`score(scattered) → nothing urgent (top urgency ${(top.parts.urgency||0).toFixed(2)}) · declutter offered`);
+    return {task: declutterTask(),
+            reason: "Nothing has a real deadline on it right now. Ten minutes of clearing, then reassess — no commitment beyond that."};
+  }
+
+  const tied = ranked.filter(r=>Math.abs(r.total-top.total)<0.001).length;
+  log(`score(${energy}) → "${top.task.title.slice(0,28)}…" ${top.total.toFixed(3)} [${top.dominant}]`
+      + (tied>1?` · ${tied}-way tie, oldest wins`:''));
+  return {task: top.task, reason: reasonFor(top.task, energy, top.dominant, top.parts[top.dominant])};
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+const screens = ['orient','focus','close','inbox','logscreen'];
+function go(id){
+  screens.forEach(s=>document.getElementById(s).classList.toggle('on', s===id));
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.s===id));
+  document.querySelector('main').scrollTop = 0;
+  document.getElementById('fab').style.display = (id==='focus'||id==='close') ? 'none':'block';
+}
+document.querySelectorAll('#nav button').forEach(b=>{
+  b.onclick = ()=>{ if(b.dataset.s==='focus' && !current.task){ renderOrient(); go('orient'); } else go(b.dataset.s); };
+});
+
+/* =========================================================
+   ORIENT — §1.2
+   ========================================================= */
+function renderOrient(){
+  const d = new Date();
+  document.getElementById('oDate').textContent =
+    d.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('oClock').textContent =
+    d.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+
+  const endHour = 22, startHour = 7;
+  const h = d.getHours() + d.getMinutes()/60;
+  const pct = clamp((h-startHour)/(endHour-startHour),0,1)*100;
+  document.getElementById('oBar').style.width = pct+'%';
+  const hoursLeft = Math.max(0, endHour - h);
+  document.getElementById('oLeft').textContent =
+    hoursLeft < 0.1 ? 'day is over' : `${Math.floor(hoursLeft)}h ${Math.round((hoursLeft%1)*60)}m left`;
+
+  // deadlines + a mocked calendar pull (Tier 2, read-only)
+  const dl = S.tasks
+    .filter(t=>t.status==='open' && t.deadline!=null && (t.deadline-now())/DAY <= 4)
+    .sort((a,b)=>a.deadline-b.deadline);
+  // Mocked calendar pull (Tier 2, read-only). Present to check that events and
+  // deadlines share one triage list, and that events are never pickable tasks.
+  const cal = [{title:'Calendar event — read-only, never surfaces in Focus', at:'09:15'},
+               {title:'Second event — checks the list handles more than one', at:'19:00'}];
+  const box = document.getElementById('oDeadlines');
+  box.innerHTML = '';
+  dl.forEach(t=>{
+    const days = Math.ceil((t.deadline-now())/DAY);
+    box.insertAdjacentHTML('beforeend',
+      `<div class="row"><div class="tick ${days<=1?'soon':''}"></div><div class="t">
+       <b>${esc(t.title)}</b><small>${days<=0?'today':days===1?'tomorrow':'in '+days+' days'}</small></div></div>`);
+  });
+  cal.forEach(c=>{
+    box.insertAdjacentHTML('beforeend',
+      `<div class="row"><div class="tick cal"></div><div class="t">
+       <b>${esc(c.title)}</b><small>calendar · ${c.at}</small></div></div>`);
+  });
+  if(!dl.length && !cal.length) box.innerHTML = '<div class="empty">Nothing immovable today.</div>';
+
+  // Inbox count only — never forces processing (1.1b)
+  const n = S.captures.filter(c=>c.status==='inbox').length;
+  document.getElementById('oInbox').innerHTML = n
+    ? `<div class="row"><div class="t"><b>${n} capture${n>1?'s':''} ungroomed</b>
+       <small>no rush — sort when you have the bandwidth</small></div>
+       <button class="mini" onclick="go('inbox')">Open</button></div>`
+    : '<div class="empty">Inbox is clear.</div>';
+
+  const badge = document.getElementById('inboxBadge');
+  badge.style.display = n ? 'block':'none';
+  badge.textContent = n;
+}
+
+document.querySelectorAll('.energy button').forEach(b=>{
+  b.onclick = ()=>startSession(b.dataset.e);
+});
+
+/* =========================================================
+   FOCUS — §1.3
+   ========================================================= */
+let current = {task:null, session:null, swapped:false};
+let timer = {int:null, total:0, left:0, running:false};
+const CIRC = 653.45;
+
+function startSession(energy){
+  const pick = pickTask(energy, null);
+  if(!pick){ toast('Nothing open to work on — capture something first'); return; }
+  current = {
+    task: pick.task, swapped:false, energy,
+    session: {id:uid('s'), date:new Date().toISOString().slice(0,10), orient_started_at:now(),
+              energy_state:energy, focus_task_id:pick.task.id, focus_started_at:null,
+              focus_ended_at:null, outcome:null, close_note:null}
+  };
+  paintFocus(pick.reason);
+  go('focus');
+  log(`session opened · energy=${energy}`);
+}
+
+function paintFocus(reason){
+  const t = current.task, g = goalOf(t.goal_id);
+  document.getElementById('fReason').textContent = reason;
+  document.getElementById('fTitle').textContent = t.title;
+  document.getElementById('fAnchor').innerHTML = g
+    ? `this connects to: <b>${esc(g.title.replace(/^I want /,''))}</b>` : '';
+  document.getElementById('fSwap').style.display = current.swapped ? 'none':'block';
+  resetTimer(t.estimated_duration_min*60);
+}
+
+document.getElementById('fSwap').onclick = ()=>{
+  const pick = pickTask(current.energy, current.task.id);
+  if(!pick) return;
+  current.task = pick.task; current.swapped = true;
+  current.session.focus_task_id = pick.task.id;
+  paintFocus(pick.reason);
+  log('swap used (one only)');
+};
+
+function resetTimer(secs){
+  clearInterval(timer.int);
+  timer = {int:null, total:secs, left:secs, running:false};
+  document.getElementById('dial').classList.remove('over','paused');
+  document.getElementById('ring').style.strokeDashoffset = 0;
+  document.getElementById('fStart').textContent = 'Start';
+  document.getElementById('fLab').textContent = 'tap to start';
+  paintTime();
+}
+function paintTime(){
+  const over = timer.left < 0;
+  const a = Math.abs(timer.left);
+  document.getElementById('fRem').textContent =
+    (over?'+':'') + String(Math.floor(a/60)).padStart(2,'0')+':'+String(Math.floor(a%60)).padStart(2,'0');
+  const frac = clamp(timer.left/timer.total,0,1);
+  document.getElementById('ring').style.strokeDashoffset = CIRC*(1-frac);
+  document.getElementById('dial').classList.toggle('over', over);
+}
+document.getElementById('fStart').onclick = ()=>{
+  if(timer.running){
+    clearInterval(timer.int); timer.running=false;
+    document.getElementById('fStart').textContent='Resume';
+    document.getElementById('fLab').textContent='paused';
+    document.getElementById('dial').classList.add('paused');
+    return;
+  }
+  timer.running = true;
+  if(!current.session.focus_started_at) current.session.focus_started_at = now();
+  document.getElementById('fStart').textContent='Pause';
+  document.getElementById('fLab').textContent='running';
+  document.getElementById('dial').classList.remove('paused');
+  timer.int = setInterval(()=>{
+    timer.left--;
+    paintTime();
+    if(timer.left===0){
+      document.getElementById('fLab').textContent='how did that go?';
+      log('timer elapsed — soft prompt, no alarm');
+    }
+  },1000);
+};
+document.getElementById('fEnd').onclick = ()=>openClose();
+document.getElementById('fCapture').onclick = ()=>openSheet();
+
+/* =========================================================
+   CLOSE — §1.5
+   ========================================================= */
+function openClose(){
+  clearInterval(timer.int); timer.running=false;
+  const g = goalOf(current.task.goal_id);
+  document.getElementById('cTitle').textContent = current.task.title;
+  document.getElementById('cAnchor').innerHTML = g
+    ? `this connects to: <b>${esc(g.title.replace(/^I want /,''))}</b>`:'';
+  document.getElementById('cOutcomes').style.display='flex';
+  document.getElementById('cFollow').style.display='none';
+  document.getElementById('cNext').style.display='none';
+  document.getElementById('cNote').value='';
+  // replay the ring draw
+  const m = document.querySelector('.donemark');
+  m.style.display='none'; void m.offsetWidth; m.style.display='block';
+  go('close');
+}
+
+let pendingOutcome = null;
+document.querySelectorAll('#cOutcomes button').forEach(b=>{
+  b.onclick = ()=>{
+    pendingOutcome = b.dataset.o;
+    if(pendingOutcome==='done'){ commitClose(null); }
+    else{
+      document.getElementById('cOutcomes').style.display='none';
+      document.getElementById('cNote').placeholder =
+        pendingOutcome==='partial' ? 'Where did you stop?' : "What's in the way?";
+      document.getElementById('cFollow').style.display='block';
+      document.getElementById('cNote').focus();
+    }
+  };
+});
+document.getElementById('cSaveNote').onclick = ()=>commitClose(document.getElementById('cNote').value.trim());
+
+function commitClose(note){
+  const s = current.session;
+  s.focus_ended_at = now(); s.outcome = pendingOutcome||'done'; s.close_note = note||null;
+  const t = current.task;
+  t.status = s.outcome==='done' ? 'done' : s.outcome==='blocked' ? 'blocked' : 'open';
+  if(s.outcome==='blocked' && note){
+    // blockers go back to Inbox, per §1.5
+    S.captures.unshift({id:uid('c'), created_at:now(), source:'text',
+      raw_text:'Blocked: '+t.title+' — '+note, audio_ref:null, transcription_confidence:null,
+      status:'inbox', parent_capture_id:null, merged_from_ids:null});
+  }
+  S.sessions.unshift(s); save();
+  log(`closed · ${s.outcome}${note?' + note':''}`);
+  document.getElementById('cOutcomes').style.display='none';
+  document.getElementById('cFollow').style.display='none';
+  document.getElementById('cNext').style.display='block';
+  renderSessions(); renderInbox(); renderOrient();
+}
+document.querySelectorAll('#cNext button').forEach(b=>{
+  b.onclick = ()=>{
+    const n = b.dataset.n;
+    if(n==='more'){ startSession(current.energy); }
+    else if(n==='rest'){ renderOrient(); go('orient'); }
+    else { go('logscreen'); }
+  };
+});
+
+/* =========================================================
+   QUICK CAPTURE — §1.1 / 1.1a
+   ========================================================= */
+const sheet = document.getElementById('sheet');
+document.getElementById('fab').onclick = ()=>openSheet();
+document.getElementById('capCancel').onclick = ()=>closeSheet();
+sheet.onclick = e=>{ if(e.target===sheet) closeSheet(); };
+
+let prevScreen = 'orient';
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('on'), 2200);
+}
+
+function openSheet(){
+  prevScreen = screens.find(s=>document.getElementById(s).classList.contains('on')) || 'orient';
+  sheet.classList.add('on');
+  document.getElementById('capText').focus();
+  paintSttNote();
+}
+function closeSheet(){
+  sheet.classList.remove('on');
+  document.getElementById('capText').value='';
+  if(rec.state==='recording') stopRec();
+}
+
+document.getElementById('capSave').onclick = ()=>{
+  // If a recording is live, let it finish — finishRec owns the save and will
+  // pick up whatever is typed. Saving here too produced two captures.
+  if(rec.state==='recording'){ stopRec(); return; }
+  const txt = document.getElementById('capText').value.trim();
+  if(!txt) { closeSheet(); return; }
+  addCapture({raw_text:txt, source:'text'});
+  closeSheet();
+  toast('Saved to Inbox');
+};
+
+function addCapture(o){
+  const c = {id:uid('c'), created_at:now(), source:o.source||'text', raw_text:o.raw_text||'',
+    audio_ref:o.audio_ref||null, transcription_confidence:o.transcription_confidence??null,
+    status:'inbox', parent_capture_id:null, merged_from_ids:null,
+    needs_review: !!o.needs_review};
+  S.captures.unshift(c); save(); renderInbox(); renderOrient();
+  log(`capture saved (${c.source})${c.needs_review?' — needs review':''}`);
+  return c;
+}
+
+/* ---------- voice ---------- */
+const rec = {state:'idle', mr:null, chunks:[], startedAt:0};
+const recBtn = document.getElementById('recBtn');
+
+function sttAdapter(){
+  if(window.ScaffoldSTT && typeof window.ScaffoldSTT.transcribe==='function') return window.ScaffoldSTT;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SR) return {name:'browser SpeechRecognition', local:false, live:true};
+  return {name:'none — audio only', local:true, fallback:true};
+}
+function paintSttNote(){
+  const a = sttAdapter();
+  const el = document.getElementById('sttNote');
+  if(a.fallback){
+    el.innerHTML = 'stt: <b>none available</b> · audio is still saved and flagged <span class="needsreview">needs review</span> — the §3.3 fallback path';
+  }else if(a.local){
+    el.innerHTML = 'stt: <b>'+a.name+'</b> · on-device, no network call · latency measured on stop';
+  }else{
+    el.innerHTML = 'stt: <b>'+a.name+'</b> · not local — this is the browser sending audio out. Flow testing only, not the shipping path.';
+  }
+}
+
+recBtn.onclick = ()=> rec.state==='recording' ? stopRec() : startRec();
+
+async function startRec(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    rec.chunks = [];
+    rec.mr = new MediaRecorder(stream);
+    rec.mr.ondataavailable = e=>rec.chunks.push(e.data);
+    rec.mr.onstop = ()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      finishRec(new Blob(rec.chunks, {type: rec.mr.mimeType||'audio/webm'}));
+    };
+    rec.mr.start();
+    rec.state='recording'; rec.startedAt = performance.now();
+    recBtn.classList.add('live'); recBtn.textContent='■';
+    document.getElementById('sttNote').innerHTML += '<br>recording…';
+    startLiveSR();
+    log('recording started');
+  }catch(e){
+    document.getElementById('sttNote').innerHTML =
+      'microphone unavailable: '+e.name+'. Type instead — capture never blocks on voice.';
+    log('mic error: '+e.name);
+  }
+}
+function stopRec(){ if(rec.mr && rec.mr.state==='recording') rec.mr.stop(); rec.state='idle';
+  recBtn.classList.remove('live'); recBtn.textContent='●'; stopLiveSR(); }
+
+/* Non-blocking by design (§3.2): the capture is saved the instant recording
+   stops. Transcription lands afterwards and patches the record. */
+async function finishRec(blob){
+  const dur = ((performance.now()-rec.startedAt)/1000).toFixed(1);
+  const typed = document.getElementById('capText').value.trim();
+
+  // Saved instantly, before any transcription work (§3.2). The audio is the
+  // fallback, so it has to survive a reload — data URL, not blob URL.
+  let ref = URL.createObjectURL(blob);
+  if(blob.size < 1.5e6){
+    try{ ref = await new Promise((res,rej)=>{
+      const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(blob);
+    }); }catch(e){ log('could not inline audio — kept as session-only blob'); }
+  }else{ log('clip over 1.5MB — kept as session-only blob, will not survive reload'); }
+
+  const c = addCapture({source:'voice', raw_text: typed || liveText || '', audio_ref:ref,
+                        needs_review: !(typed||liveText)});
+  closeSheet();
+  toast('Saved to Inbox');
+  if(prevScreen !== 'focus') go('inbox');   // never yank the user out of Focus
+  log(`audio saved · ${dur}s · ${(blob.size/1024).toFixed(0)}kb`);
+
+  const a = sttAdapter();
+  if(a.transcribe){
+    const t0 = performance.now();
+    try{
+      const text = await a.transcribe(blob);
+      const ms = Math.round(performance.now()-t0);
+      c.raw_text = text; c.needs_review = false; c.transcription_confidence = 0.9;
+      save(); renderInbox();
+      log(`transcribed in ${ms}ms via ${a.name} · ${(ms/(dur*1000)).toFixed(2)}× realtime`);
+    }catch(e){
+      log('transcription failed — audio kept, flagged needs review');
+    }
+  }else if(liveText){
+    log('transcript from live recognition (non-local)');
+  }
+  liveText = '';
+}
+
+/* live browser recognition, used only when no local adapter is present */
+let sr = null, liveText = '';
+function startLiveSR(){
+  const a = sttAdapter();
+  if(!a.live) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  liveText = '';
+  sr = new SR(); sr.continuous = true; sr.interimResults = true; sr.lang = 'en-GB';
+  sr.onresult = e=>{
+    let final='';
+    for(let i=0;i<e.results.length;i++) if(e.results[i].isFinal) final += e.results[i][0].transcript;
+    if(final) liveText = final.trim();
+  };
+  try{ sr.start(); }catch(e){}
+}
+function stopLiveSR(){ if(sr){ try{sr.stop();}catch(e){} sr=null; } }
+
+/* =========================================================
+   INBOX GROOMING — §1.1b
+   ========================================================= */
+let selection = {capId:null, from:null, to:null};
+
+function segments(text){
+  // Split on natural pause points — roughly the boundaries VAD would give you.
+  // Lookbehind isn't universal (older Safari), so fall back to punctuation only.
+  let parts;
+  try{
+    parts = text.split(/(?<=[.,;!?])\s+|\s+(?=(?:and|also|oh|then|but)\s)/i);
+  }catch(e){
+    parts = text.split(/([.,;!?]+\s+)/).reduce((a,s,i)=>{
+      if(i%2) a[a.length-1]+=s; else a.push(s); return a;},[]);
+  }
+  parts = parts.map(s=>s.trim()).filter(Boolean);
+
+  // Merge fragments of 1–2 words into the next segment. "oh and the gear needs
+  // washing" was splitting into a useless one-word tap target of just "oh".
+  const out = [];
+  parts.forEach(s=>{
+    const short = s.split(/\s+/).length <= 2;
+    if(short && out.length && !/[.!?]$/.test(out[out.length-1])) out[out.length-1] += ' ' + s;
+    else if(short && parts.indexOf(s) < parts.length-1) out.push(s);
+    else out.push(s);
+  });
+  // second pass: pull any remaining leading stub forward
+  for(let i=0;i<out.length-1;i++){
+    if(out[i].split(/\s+/).length<=2 && !/[.!?]$/.test(out[i])){
+      out[i+1] = out[i]+' '+out[i+1]; out.splice(i,1); i--;
+    }
+  }
+  return out;
+}
+
+function renderInbox(){
+  const list = document.getElementById('inboxList');
+  const caps = S.captures.filter(c=>c.status==='inbox');
+  selection = {capId:null, from:null, to:null};   // stale after a re-render
+  if(!caps.length){ list.innerHTML = '<div class="empty">Nothing waiting. Capture something with +.</div>'; return; }
+  list.innerHTML = '';
+  caps.forEach(c=>{
+    const segs = segments(c.raw_text);
+    const el = document.createElement('div');
+    el.className = 'capcard';
+    const when = new Date(c.created_at).toLocaleString('sv-SE',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    el.innerHTML = `
+      <div class="meta">
+        <span class="eyebrow">${c.source==='voice'?'voice':'typed'} · ${when}</span>
+        ${c.needs_review?'<span class="needsreview">needs review</span>':''}
+      </div>
+      <div class="segs" data-cap="${c.id}"></div>
+      ${c.audio_ref?`<audio controls src="${c.audio_ref}"></audio>`:
+        c.audio_lost?`<span class="parentlink">audio from a previous session is no longer available</span>`:''}
+      ${c.parent_capture_id?`<span class="parentlink">split from an earlier capture ↑</span>`:''}
+      <div class="capactions">
+        <button class="mini split" disabled>Split off selection</button>
+        <button class="mini task">Make it a task</button>
+        <button class="mini merge">Merge with next</button>
+        <button class="mini done">Discard</button>
+      </div>`;
+    const segbox = el.querySelector('.segs');
+    if(!c.raw_text){
+      segbox.innerHTML = '<span class="muted" style="font-size:13.5px">No transcript — play the audio, or type what it was.</span>';
+    }
+    segs.forEach((s,i)=>{
+      const sp = document.createElement('span');
+      sp.className='seg'; sp.textContent = s+' '; sp.dataset.i=i;
+      sp.onclick = ()=>markSeg(c.id, i, segbox, el);
+      segbox.appendChild(sp);
+    });
+    el.querySelector('.split').onclick = ()=>doSplit(c, segs);
+    el.querySelector('.task').onclick  = ()=>captureToTask(c, segs);
+    el.querySelector('.merge').onclick = ()=>doMerge(c);
+    el.querySelector('.done').onclick  = ()=>{ c.status='discarded'; save(); renderInbox(); renderOrient(); log('capture discarded'); };
+    list.appendChild(el);
+  });
+}
+
+/* tap-to-mark, not drag-select — forgiving on a phone (§1.1b) */
+function markSeg(capId, i, box, card){
+  if(selection.capId!==capId){ selection = {capId, from:i, to:i}; }
+  else if(selection.from===i && selection.to===i){ selection = {capId:null,from:null,to:null}; }
+  else if(i < selection.from){ selection.from = i; }
+  else { selection.to = i; }
+  document.querySelectorAll('.segs').forEach(b=>b.querySelectorAll('.seg').forEach(s=>s.classList.remove('sel')));
+  if(selection.capId){
+    box.querySelectorAll('.seg').forEach(s=>{
+      const n = +s.dataset.i;
+      s.classList.toggle('sel', n>=selection.from && n<=selection.to);
+    });
+  }
+  document.querySelectorAll('.split').forEach(b=>b.disabled=true);
+  if(selection.capId) card.querySelector('.split').disabled = false;
+}
+
+function selectedText(segs){
+  return segs.slice(selection.from, selection.to+1).join(' ').trim();
+}
+
+function doSplit(c, segs){
+  if(selection.capId!==c.id) return;
+  const text = selectedText(segs);
+  // original is never destructively edited — §1.1b
+  S.captures.unshift({id:uid('c'), created_at:now(), source:c.source, raw_text:text,
+    audio_ref:c.audio_ref, transcription_confidence:c.transcription_confidence,
+    status:'inbox', parent_capture_id:c.id, merged_from_ids:null});
+  selection = {capId:null,from:null,to:null};
+  save(); renderInbox(); renderOrient();
+  log(`split off: "${text.slice(0,34)}…" (parent kept intact)`);
+}
+
+function doMerge(c){
+  const caps = S.captures.filter(x=>x.status==='inbox');
+  const i = caps.indexOf(c);
+  if(i===caps.length-1){ log('nothing after this one to merge'); return; }
+  const next = caps[i+1];
+  S.captures.unshift({id:uid('c'), created_at:now(), source:c.source,
+    raw_text:(c.raw_text+' '+next.raw_text).trim(), audio_ref:c.audio_ref||next.audio_ref,
+    transcription_confidence:null, status:'inbox', parent_capture_id:null,
+    merged_from_ids:[c.id,next.id]});
+  c.status='groomed'; next.status='groomed';
+  save(); renderInbox(); renderOrient(); log('merged two captures');
+}
+
+function captureToTask(c, segs){
+  const text = selection.capId===c.id ? selectedText(segs) : c.raw_text;
+  if(!text) return;
+  S.tasks.push({id:uid('t'), title:text.slice(0,90), source_capture_id:c.id,
+    estimated_duration_min:25, goal_id:null, created_at:now(), deadline:null,
+    status:'open', energy_tag:null});
+  if(selection.capId!==c.id) c.status='groomed';
+  selection = {capId:null,from:null,to:null};
+  save(); renderInbox(); renderOrient(); log('capture → task (25 min default, no goal yet)');
+}
+
+/* =========================================================
+   TODAY
+   ========================================================= */
+function renderSessions(){
+  const el = document.getElementById('sessionList');
+  if(!S.sessions.length){ el.innerHTML='<div class="empty">No sessions closed yet. That is not a failure state.</div>'; return; }
+  el.innerHTML = '';
+  S.sessions.slice(0,20).forEach(s=>{
+    const t = S.tasks.find(x=>x.id===s.focus_task_id);
+    const mins = s.focus_started_at ? Math.round((s.focus_ended_at-s.focus_started_at)/60000) : 0;
+    const mark = s.outcome==='done'?'<b class="g" style="color:var(--moss)">✓</b>'
+              : s.outcome==='partial'?'<b style="color:var(--brass)">◑</b>'
+              : '<b style="color:var(--rust)">✕</b>';
+    el.insertAdjacentHTML('beforeend',
+      `<div class="row">${mark}<div class="t"><b>${esc(t?t.title:'—')}</b>
+        <small>${s.energy_state} · ${mins} min${s.close_note?' · '+esc(s.close_note.slice(0,40)):''}</small></div></div>`);
+  });
+}
+
+document.getElementById('exportBtn').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download='scaffold-export.json'; a.click();
+  log('exported data (users own their data — no lock-in)');
+};
+document.getElementById('resetBtn').onclick = ()=>{
+  if(!confirm('Reset the PoC back to seed data?')) return;
+  Store.clear(); S = seed(); save(); renderAll(); go('orient'); log('reset to seed');
+};
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+function esc(s){ return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function renderAll(){ renderOrient(); renderInbox(); renderSessions(); }
+renderAll();
+setInterval(()=>{ if(document.getElementById('orient').classList.contains('on')) renderOrient(); }, 30000);
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeSheet(); }
+  if(e.key==='c' && !/input|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); openSheet(); }
+});
+
+document.getElementById('modePill').textContent = Store.persistent ? 'poc · saved locally' : 'poc · in memory';
+log('adapter: '+sttAdapter().name);
+</script>
+<script type="module">
+/* =========================================================
+   Local Whisper via Transformers.js  —  PoC deviation, on purpose.
+   ---------------------------------------------------------
+   The architecture doc specifies whisper.cpp. That needs SharedArrayBuffer,
+   which needs COOP/COEP headers, which GitHub Pages cannot send. This runs
+   Whisper through onnxruntime-web instead: WebGPU where available, otherwise
+   single-threaded WASM. Neither path needs cross-origin isolation, so it
+   deploys to Pages as a plain static file.
+
+   What that costs: the runtime is ONNX, not whisper.cpp, so absolute latency
+   here is a directional signal about model size and device class, NOT a
+   prediction of native mobile performance. Same weights, different engine.
+   ========================================================= */
+const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+const MODELS = {
+  'tiny.en':  'onnx-community/whisper-tiny.en',
+  'base.en':  'onnx-community/whisper-base.en',
+  'small.en': 'onnx-community/whisper-small.en'
+};
+
+const sel = document.getElementById('modelSel');
+const btn = document.getElementById('modelLoad');
+const stat = document.getElementById('modelStat');
+const setStat = (msg, cls='') => { stat.textContent = msg; stat.className = 'modelstat '+cls; };
+
+let pipe = null, backend = null, busy = false;
+
+sel.onchange = ()=>{ btn.disabled = !sel.value; };
+
+async function loadModel(key){
+  if(busy) return;
+  busy = true; btn.disabled = true;
+  const useGPU = !!navigator.gpu;
+  backend = useGPU ? 'webgpu' : 'wasm';
+  setStat(`importing transformers.js · backend ${backend}`, 'busy');
+  try{
+    const { pipeline } = await import(TJS);
+    const seen = {};
+    pipe = await pipeline('automatic-speech-recognition', MODELS[key], {
+      device: backend,
+      // Whisper is very sensitive to encoder quantisation. A q8 decoder on
+      // WebGPU is a known source of garbage output, so the two backends get
+      // different settings rather than one shared "quantized" default.
+      dtype: useGPU
+        ? { encoder_model:'fp32', decoder_model_merged:'q4' }
+        : { encoder_model:'q8',   decoder_model_merged:'q8' },
+      progress_callback: p=>{
+        if(p.status==='progress' && p.file){
+          seen[p.file] = p.progress||0;
+          const avg = Object.values(seen).reduce((a,b)=>a+b,0)/Object.keys(seen).length;
+          setStat(`downloading ${key} · ${avg.toFixed(0)}% (cached after first run)`, 'busy');
+        }
+      }
+    });
+
+    window.ScaffoldSTT = {
+      name: `whisper ${key} · ${backend}`,
+      local: true,
+      transcribe: async (blob)=>{
+        const pcm = await toPCM16k(blob);
+        const out = await pipe(pcm, { chunk_length_s: 30, language: 'english' });
+        return (out.text||'').trim();
+      }
+    };
+    setStat(`ready · whisper ${key} on ${backend} · nothing leaves this device`, 'ready');
+    window.log && window.log(`local model ready: ${key} / ${backend}`);
+    window.paintSttNote && window.paintSttNote();
+    try{ localStorage.setItem('scaffold_model', key); }catch(e){}
+  }catch(e){
+    setStat('load failed: '+(e.message||e).slice(0,90), 'err');
+    window.log && window.log('model load failed — falling back to audio-only capture');
+  }
+  busy = false; btn.disabled = false;
+}
+
+btn.onclick = ()=> sel.value && loadModel(sel.value);
+
+/* Whisper wants mono Float32 at 16 kHz. MediaRecorder gives webm/opus on
+   Chrome and mp4/aac on Safari, so decode first, then resample explicitly
+   rather than trusting the AudioContext to have been created at 16 kHz. */
+async function toPCM16k(blob){
+  const ctx = new (window.AudioContext||window.webkitAudioContext)();
+  const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
+  ctx.close();
+  const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(buf.duration*16000)), 16000);
+  const src = off.createBufferSource();
+  src.buffer = buf; src.connect(off.destination); src.start();
+  return (await off.startRendering()).getChannelData(0);
+}
+
+// Re-load whatever was used last time. The weights are already in the browser
+// cache, so this is fast and avoids making the user re-pick on every visit.
+try{
+  const last = localStorage.getItem('scaffold_model');
+  if(last && MODELS[last]){ sel.value = last; loadModel(last); }
+}catch(e){}
+</script>
+</body>
+</html>
